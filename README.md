@@ -1,1 +1,2 @@
 putos
+josue es gay
