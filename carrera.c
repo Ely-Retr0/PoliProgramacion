@@ -4,7 +4,7 @@
 #include <locale.h>
 #define MAX_ATLETAS 100
 #define NUM_CONTACTOS 3
-
+putos
 // Estructura para el domicilio
 typedef struct {
 char calle[50];
@@ -39,7 +39,7 @@ void mostrarPorCategoria(Registro atletas[], int total);
 void mostrarPorNumero(Registro atletas[], int total, int id);
 void mostrarPorNombre(Registro atletas[], int total, char nombre[]);
 
-// Función principal
+// FunciÃ³n principal
 int main() {
 Registro atletas[MAX_ATLETAS];
 int total = 0, opcion, idAuto = 1;
@@ -234,4 +234,5 @@ encontrado = 1;
 if (!encontrado)
 printf("No se encontro ningun atleta con ese nombre.\n");
 }
+
 
