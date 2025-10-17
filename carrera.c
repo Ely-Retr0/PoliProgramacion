@@ -2,239 +2,233 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
-#define MAX_ATLETAS 100
-#define NUM_CONTACTOS 3
 
-// Estructura para el domicilio
-typedef struct {
+#define MAX_ATLETAS 500
+#define MAX_CARRERAS 3
+#define MAX_CONTACTOS 3
+
+typedef struct { //inicio struct Domicilio
     char calle[50];
     char colonia[50];
-    int numeroExterior;
-    int codigoPostal;
-    char municipio[30];
-    char estado[30];
-} Domicilio;
+    char ciudad[50];
+    char estado[50];
+} Domicilio; //fin struct Domicilio
 
-// Estructura para contactos de emergencia
-typedef struct {
-    char nombre[30];
-    char apellidoP[30];
-    char apellidoM[30];
-    int telefono; // cambiado a entero
-} ContactoEmergencia;
+typedef struct { //inicio struct ContactoEmergencia
+    char nombre[50];
+    char telefono[15];
+} ContactoEmergencia; //fin struct ContactoEmergencia
 
-// Estructura principal del registro
-typedef struct {
-    int id;
-    char nombre[30];
-    char apellidoP[30];
-    char apellidoM[30];
+typedef struct { //inicio struct Registro
+    int numeroRegistro;
+    char nombre[50];
     Domicilio domicilio;
-    int tipoCarrera; // 100, 200 o 400 mts
-    ContactoEmergencia contactos[NUM_CONTACTOS];
-} Registro;
+    int edad;
+    char genero[10];
+    ContactoEmergencia contactos[MAX_CONTACTOS];
+    int carreras[MAX_CARRERAS];
+    int numCarreras;
+} Registro; //fin struct Registro
 
-// Prototipos de funciones
-void capturarRegistro(Registro *r, int id);
-void mostrarRegistro(Registro r);
-void imprimirTodos(Registro atletas[], int total);
-void mostrarPorCategoria(Registro atletas[], int total);
-void mostrarPorNumero(Registro atletas[], int total, int id);
-void mostrarPorNombre(Registro atletas[], int total, char nombre[]);
+// Prototipos
+void menu(); //inicio void
+void op_menu(Registro atletas[], int *total); //inicio void
+void guardarRegistro(Registro atletas[], int *total); //inicio void
+void imprimirTodo(Registro atletas[], int total); //inicio void
+void mostrarPorCategoria(Registro atletas[], int total); //inicio void
+void mostrarPorNumero(Registro atletas[], int total); //inicio void
+void mostrarPorNombre(Registro atletas[], int total); //inicio void
 
-// Función principal
-int main() {
-    setlocale(LC_ALL, ""); // para permitir acentos y ñ
-
-    Registro atletas[MAX_ATLETAS];
-    int total = 0, opcion, idAuto = 1;
-    char nombreBuscado[30];
-
-    do {
-        printf("\n=== MENU PRINCIPAL ===\n");
-        printf("1.- Guardar\n");
-        printf("2.- Imprimir datos\n");
-        printf("3.- Mostrar x categoría\n");
-        printf("4.- Mostrar x número de registro\n");
-        printf("5.- Mostrar registro x nombre\n");
-        printf("6.- Salir\n");
-        printf("Seleccione una opción: ");
-        scanf("%d", &opcion);
-        getchar(); // limpiar buffer
-
-        switch (opcion) {
-            case 1:
-                if (total < MAX_ATLETAS) {
-                    printf("\n--- Registrar atleta #%d ---\n", idAuto);
-                    capturarRegistro(&atletas[total], idAuto);
-                    total++;
-                    idAuto++;
-                } else {
-                    printf("No se pueden registrar más atletas.\n");
-                }
-                break;
-
-            case 2:
-                imprimirTodos(atletas, total);
-                break;
-
-            case 3:
-                mostrarPorCategoria(atletas, total);
-                break;
-
-            case 4: {
-                int idBuscar;
-                printf("Ingrese el número de registro a buscar: ");
-                scanf("%d", &idBuscar);
-                getchar();
-                mostrarPorNumero(atletas, total, idBuscar);
-                break;
-            }
-
-            case 5:
-                printf("Ingrese el nombre del atleta a buscar: ");
-                fgets(nombreBuscado, sizeof(nombreBuscado), stdin);
-                nombreBuscado[strcspn(nombreBuscado, "\n")] = '\0';
-                mostrarPorNombre(atletas, total, nombreBuscado);
-                break;
-
-            case 6:
-                printf("Saliendo del programa...\n");
-                break;
-
-            default:
-                printf("Opción no válida. Intente de nuevo.\n");
-        }
-
-    } while (opcion != 6);
-
+//*****************************************************************
+int main() { //inicio main
+    setlocale(LC_ALL, "");
+    Registro atletas[MAX_ATLETAS] = {0};
+    int total = 0;
+    op_menu(atletas, &total);
     return 0;
-}
+} //fin main
 
-// --- FUNCIONES ---
+//*****************************************************************
+void menu() { //inicio void menu
+    printf("\n===== MENÚ PRINCIPAL =====\n");
+    printf("1. Guardar registro de atleta\n");
+    printf("2. Imprimir todos los registros\n");
+    printf("3. Mostrar por categoría (100, 200, 400 m)\n");
+    printf("4. Mostrar por número de registro\n");
+    printf("5. Mostrar por nombre\n");
+    printf("6. Salir\n");
+} //fin void menu
 
-void capturarRegistro(Registro *r, int id) {
-    r->id = id;
-    printf("ID auto-incrementable: %d\n", id);
-
-    printf("Nombre: ");
-    gets(r->nombre);
-
-    printf("Apellido paterno: ");
-    gets(r->apellidoP);
-
-    printf("Apellido materno: ");
-    gets(r->apellidoM);
-
-    printf("\n=== Domicilio ===\n");
-    printf("Calle: ");
-    gets(r->domicilio.calle);
-
-    printf("Colonia: ");
-    gets(r->domicilio.colonia);
-
-    printf("Número exterior: ");
-    scanf("%d", &r->domicilio.numeroExterior);
-    getchar();
-
-    printf("Código postal: ");
-    scanf("%d", &r->domicilio.codigoPostal);
-    getchar();
-
-    printf("Municipio: ");
-    gets(r->domicilio.municipio);
-
-    printf("Estado: ");
-    gets(r->domicilio.estado);
-
-    printf("\nTipo de carrera (100, 200 o 400 mts): ");
-    scanf("%d", &r->tipoCarrera);
-    getchar();
-
-    printf("\n=== Contactos de emergencia ===\n");
-    for (int i = 0; i < NUM_CONTACTOS; i++) {
-        printf("\nContacto #%d\n", i + 1);
-        printf("Nombre: ");
-        gets(r->contactos[i].nombre);
-
-        printf("Apellido paterno: ");
-        gets(r->contactos[i].apellidoP);
-
-        printf("Apellido materno: ");
-        gets(r->contactos[i].apellidoM);
-
-        printf("Teléfono (solo números): ");
-        scanf("%d", &r->contactos[i].telefono);
+//*****************************************************************
+void op_menu(Registro atletas[], int *total) { //inicio void op_menu
+    int op;
+    do { //inicio do
+        menu();
+        printf("Elige una opción: ");
+        scanf("%d", &op);
         getchar();
-    }
 
-    printf("\nRegistro guardado correctamente.\n");
-}
+        switch(op) { //inicio switch
+            case 1: guardarRegistro(atletas, total); break;
+            case 2: imprimirTodo(atletas, *total); break;
+            case 3: mostrarPorCategoria(atletas, *total); break;
+            case 4: mostrarPorNumero(atletas, *total); break;
+            case 5: mostrarPorNombre(atletas, *total); break;
+            case 6: printf("\nSaliendo del programa...\n"); break;
+            default: printf("\nOpción inválida, intenta de nuevo.\n");
+        } //fin switch
+    } while(op != 6); //fin do
+} //fin void op_menu
 
-void mostrarRegistro(Registro r) {
-    printf("\nID: %d\n", r.id);
-    printf("Nombre completo: %s %s %s\n", r.nombre, r.apellidoP, r.apellidoM);
-    printf("Domicilio: %s, Col. %s, No. %d, C.P. %d, %s, %s\n",
-           r.domicilio.calle, r.domicilio.colonia, r.domicilio.numeroExterior,
-           r.domicilio.codigoPostal, r.domicilio.municipio, r.domicilio.estado);
-    printf("Tipo de carrera: %d mts\n", r.tipoCarrera);
-
-    printf("Contactos de emergencia:\n");
-    for (int i = 0; i < NUM_CONTACTOS; i++) {
-        printf("  #%d %s %s %s - Tel: %d\n", i + 1,
-               r.contactos[i].nombre, r.contactos[i].apellidoP,
-               r.contactos[i].apellidoM, r.contactos[i].telefono);
-    }
-}
-
-void imprimirTodos(Registro atletas[], int total) {
-    if (total == 0) {
-        printf("No hay registros.\n");
+//*****************************************************************
+void guardarRegistro(Registro atletas[], int *total) { //inicio void guardarRegistro
+    if(*total >= MAX_ATLETAS) {
+        printf("\nLímite máximo de atletas alcanzado.\n");
         return;
     }
 
-    printf("\n=== Lista de atletas registrados ===\n");
-    for (int i = 0; i < total; i++) {
-        mostrarRegistro(atletas[i]);
-    }
-}
+    Registro *a = &atletas[*total];
+    a->numeroRegistro = *total + 1;
 
-void mostrarPorCategoria(Registro atletas[], int total) {
+    printf("\n=== Registro #%d ===\n", a->numeroRegistro);
+
+    printf("Nombre del atleta: ");
+    fflush(stdin);
+    gets(a->nombre);
+    getchar();
+
+    printf("\n--- Domicilio ---\n");
+    printf("Calle: "); fflush(stdin); gets(a->domicilio.calle); getchar();
+    printf("Colonia: "); gets(a->domicilio.colonia); getchar();
+    printf("Ciudad: "); gets(a->domicilio.ciudad); getchar();
+    printf("Estado: "); gets(a->domicilio.estado); getchar();
+
+    do { //inicio do
+        printf("Edad (14 a 50): ");
+        scanf("%d", &a->edad);
+        if(a->edad < 14 || a->edad > 50)
+            printf("Edad inválida.\n");
+    } while(a->edad < 14 || a->edad > 50); //fin do
+    getchar();
+
+    printf("Género (M/F): ");
+    fflush(stdin);
+    gets(a->genero);
+    getchar();
+
+    printf("\n--- Contactos de emergencia ---\n");
+    for(int i = 0; i < MAX_CONTACTOS; i++) { //inicio for
+        printf("\nContacto #%d\n", i+1);
+        printf("Nombre: ");
+        fflush(stdin);
+        gets(a->contactos[i].nombre);
+        getchar();
+        printf("Teléfono: ");
+        gets(a->contactos[i].telefono);
+        getchar();
+    } //fin for
+
+    printf("\n--- Carreras disponibles ---\n");
+    printf("1. 100 metros\n2. 200 metros\n3. 400 metros\n");
+    printf("¿Cuántas carreras desea registrar? (1-3): ");
+    scanf("%d", &a->numCarreras);
+
+    if(a->numCarreras < 1) a->numCarreras = 1;
+    if(a->numCarreras > 3) a->numCarreras = 3;
+
+    for(int i = 0; i < a->numCarreras; i++) { //inicio for
+        printf("Carrera #%d (100, 200 o 400): ", i+1);
+        scanf("%d", &a->carreras[i]);
+    } //fin for
+
+    (*total)++;
+    printf("\nRegistro guardado exitosamente.\n");
+    getchar();
+} //fin void guardarRegistro
+
+//*****************************************************************
+void imprimirTodo(Registro atletas[], int total) { //inicio void imprimirTodo
+    if(total == 0) {
+        printf("\nNo hay registros aún.\n");
+        return;
+    }
+
+    for(int i = 0; i < total; i++) { //inicio for
+        printf("\n=== Registro #%d ===\n", atletas[i].numeroRegistro);
+        printf("Nombre: %s\nEdad: %d\nGénero: %s\n",
+               atletas[i].nombre, atletas[i].edad, atletas[i].genero);
+        printf("Domicilio: %s, %s, %s, %s\n",
+               atletas[i].domicilio.calle, atletas[i].domicilio.colonia,
+               atletas[i].domicilio.ciudad, atletas[i].domicilio.estado);
+
+        printf("\nCarreras: ");
+        for(int j = 0; j < atletas[i].numCarreras; j++) { //inicio for
+            printf("%d m ", atletas[i].carreras[j]);
+        } //fin for
+
+        printf("\nContactos de emergencia:\n");
+        for(int k = 0; k < MAX_CONTACTOS; k++) { //inicio for
+            printf("  %d. %s - %s\n", k+1,
+                   atletas[i].contactos[k].nombre,
+                   atletas[i].contactos[k].telefono);
+        } //fin for
+    } //fin for
+} //fin void imprimirTodo
+
+//*****************************************************************
+void mostrarPorCategoria(Registro atletas[], int total) { //inicio void mostrarPorCategoria
     int cont100 = 0, cont200 = 0, cont400 = 0;
 
-    for (int i = 0; i < total; i++) {
-        if (atletas[i].tipoCarrera == 100)
-            cont100++;
-        else if (atletas[i].tipoCarrera == 200)
-            cont200++;
-        else if (atletas[i].tipoCarrera == 400)
-            cont400++;
-    }
+    for(int i = 0; i < total; i++) { //inicio for
+        for(int j = 0; j < atletas[i].numCarreras; j++) { //inicio for
+            if(atletas[i].carreras[j] == 100) cont100++;
+            else if(atletas[i].carreras[j] == 200) cont200++;
+            else if(atletas[i].carreras[j] == 400) cont400++;
+        } //fin for
+    } //fin for
 
-    printf("\n=== Total de participantes por categoría ===\n");
-    printf("100 mts: %d\n", cont100);
-    printf("200 mts: %d\n", cont200);
-    printf("400 mts: %d\n", cont400);
-}
+    printf("\nAtletas por categoría:\n");
+    printf("100 metros: %d\n", cont100);
+    printf("200 metros: %d\n", cont200);
+    printf("400 metros: %d\n", cont400);
+} //fin void mostrarPorCategoria
 
-void mostrarPorNumero(Registro atletas[], int total, int id) {
-    for (int i = 0; i < total; i++) {
-        if (atletas[i].id == id) {
-            mostrarRegistro(atletas[i]);
+//*****************************************************************
+void mostrarPorNumero(Registro atletas[], int total) { //inicio void mostrarPorNumero
+    int num;
+    printf("Ingrese el número de registro: ");
+    scanf("%d", &num);
+
+    for(int i = 0; i < total; i++) { //inicio for
+        if(atletas[i].numeroRegistro == num) {
+            printf("\nRegistro #%d - %s, %d años, %s\n",
+                   atletas[i].numeroRegistro, atletas[i].nombre,
+                   atletas[i].edad, atletas[i].genero);
             return;
         }
-    }
-    printf("No se encontró ningún atleta con ese número de registro.\n");
-}
+    } //fin for
 
-void mostrarPorNombre(Registro atletas[], int total, char nombre[]) {
+    printf("No se encontró el registro.\n");
+} //fin void mostrarPorNumero
+
+//*****************************************************************
+void mostrarPorNombre(Registro atletas[], int total) { //inicio void mostrarPorNombre
+    char nombreBuscado[50];
     int encontrado = 0;
-    for (int i = 0; i < total; i++) {
-        if (strcasecmp(atletas[i].nombre, nombre) == 0) {
-            mostrarRegistro(atletas[i]);
+    getchar();
+    printf("Nombre a buscar: ");
+    gets(nombreBuscado);
+    getchar();
+
+    for(int i = 0; i < total; i++) { //inicio for
+        if(strcmp(atletas[i].nombre, nombreBuscado) == 0) {
+            printf("\nRegistro #%d - %s, %d años, %s\n",
+                   atletas[i].numeroRegistro, atletas[i].nombre,
+                   atletas[i].edad, atletas[i].genero);
             encontrado = 1;
         }
-    }
-    if (!encontrado)
+    } //fin for
+
+    if(!encontrado)
         printf("No se encontró ningún atleta con ese nombre.\n");
-}
+} //fin void mostrarPorNombre
