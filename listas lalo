@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Estructura para guardar un numero decimal
+struct Nodo {
+    float numero;
+    struct Nodo *siguiente;
+};
+
+// Apuntador al primer nodo (lista vacia al inicio)
+struct Nodo *inicio = NULL;
+
+// Funcion para insertar un numero al inicio
+void insertarInicio(float n) {
+    struct Nodo *nuevo = (struct Nodo*) malloc(sizeof(struct Nodo));
+    nuevo->numero = n;
+    nuevo->siguiente = inicio;
+    inicio = nuevo;
+    printf("Numero insertado al inicio.\n");
+}
+
+// Funcion para insertar un numero al final
+void insertarFinal(float n) {
+    struct Nodo *nuevo = (struct Nodo*) malloc(sizeof(struct Nodo));
+    nuevo->numero = n;
+    nuevo->siguiente = NULL;
+
+    if (inicio == NULL) {
+        inicio = nuevo;
+    } else {
+        struct Nodo *temp = inicio;
+        while (temp->siguiente != NULL) {
+            temp = temp->siguiente;
+        }
+        temp->siguiente = nuevo;
+    }
+    printf("Numero insertado al final.\n");
+}
+
+// Funcion para mostrar todos los numeros
+void mostrar() {
+    if (inicio == NULL) {
+        printf("La lista esta vacia.\n");
+    } else {
+        struct Nodo *temp = inicio;
+        printf("Numeros en la lista:\n");
+        while (temp != NULL) {
+            printf("%.2f ", temp->numero);
+            temp = temp->siguiente;
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int opcion;
+    float numero;
+
+    do {
+        printf("\n--- MENU ---\n");
+        printf("1. Insertar al inicio\n");
+        printf("2. Insertar al final\n");
+        printf("3. Mostrar\n");
+        printf("4. Salir\n");
+        printf("Elige una opcion: ");
+        scanf("%d", &opcion);
+
+        switch(opcion) {
+            case 1:
+                printf("Ingresa un numero decimal: ");
+                scanf("%f", &numero);
+                insertarInicio(numero);
+                break;
+            case 2:
+                printf("Ingresa un numero decimal: ");
+                scanf("%f", &numero);
+                insertarFinal(numero);
+                break;
+            case 3:
+                mostrar();
+                break;
+            case 4:
+                printf("Saliendo del programa...\n");
+                break;
+            default:
+                printf("Opcion no valida.\n");
+        }
+    } while(opcion != 4);
+
+    return 0;
+}
