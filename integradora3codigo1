@@ -1,0 +1,419 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// ======================================================
+typedef struct {
+    char calle[50];
+    char numero[10];
+    char colonia[50];
+    char codigoPostal[10];
+    char ciudad[50];
+} Domicilio;
+
+typedef struct Empleado {
+    int numEmpleado;
+    char nombre[50];
+    char departamento[50];
+    Domicilio domicilio;
+    char telefono[20];
+    float salario;
+    struct Empleado* anterior;
+    struct Empleado* siguiente;
+} Empleado;
+
+typedef struct Queja {
+    int folio;
+    char nombrePersona[50];
+    char departamentoQueja[50];
+    char descripcion[200];
+    char fecha[20];
+    struct Queja* siguiente;
+} Queja;
+
+Empleado* cabeza = NULL;
+Queja* cima = NULL;
+
+// =============== FUNCIONES LISTA DOBLE ================
+
+Empleado* crearEmpleado() {
+    Empleado* nuevo = (Empleado*) malloc(sizeof(Empleado));
+    if (!nuevo) {
+        printf("Error: sin memoria.\n");
+        exit(1);
+    }
+
+    printf("\n--- Alta de Empleado ---\n");
+    printf("Numero de empleado: ");
+    scanf("%d", &nuevo->numEmpleado);
+    getchar();
+
+    printf("Nombre y apellido: ");
+    fgets(nuevo->nombre, 50, stdin);
+    nuevo->nombre[strcspn(nuevo->nombre, "\n")] = '\0';
+
+    printf("Departamento: ");
+    fgets(nuevo->departamento, 50, stdin);
+    nuevo->departamento[strcspn(nuevo->departamento, "\n")] = '\0';
+
+    printf("Calle: ");
+    fgets(nuevo->domicilio.calle, 50, stdin);
+    nuevo->domicilio.calle[strcspn(nuevo->domicilio.calle, "\n")] = '\0';
+
+    printf("Numero: ");
+    fgets(nuevo->domicilio.numero, 10, stdin);
+    nuevo->domicilio.numero[strcspn(nuevo->domicilio.numero, "\n")] = '\0';
+
+    printf("Colonia: ");
+    fgets(nuevo->domicilio.colonia, 50, stdin);
+    nuevo->domicilio.colonia[strcspn(nuevo->domicilio.colonia, "\n")] = '\0';
+
+    printf("Codigo Postal: ");
+    fgets(nuevo->domicilio.codigoPostal, 10, stdin);
+    nuevo->domicilio.codigoPostal[strcspn(nuevo->domicilio.codigoPostal, "\n")] = '\0';
+
+    printf("Ciudad: ");
+    fgets(nuevo->domicilio.ciudad, 50, stdin);
+    nuevo->domicilio.ciudad[strcspn(nuevo->domicilio.ciudad, "\n")] = '\0';
+
+    printf("Telefono: ");
+    fgets(nuevo->telefono, 20, stdin);
+    nuevo->telefono[strcspn(nuevo->telefono, "\n")] = '\0';
+
+    printf("Salario mensual: ");
+    scanf("%f", &nuevo->salario);
+    getchar();
+
+    nuevo->anterior = nuevo->siguiente = NULL;
+    return nuevo;
+}
+
+void insertarOrdenado(Empleado* nuevo) {
+    if (cabeza == NULL) {
+        cabeza = nuevo;
+        return;
+    }
+
+    if (nuevo->numEmpleado < cabeza->numEmpleado) {
+        nuevo->siguiente = cabeza;
+        cabeza->anterior = nuevo;
+        cabeza = nuevo;
+        return;
+    }
+
+    Empleado* actual = cabeza;
+    while (actual->siguiente && actual->siguiente->numEmpleado < nuevo->numEmpleado)
+        actual = actual->siguiente;
+
+    nuevo->siguiente = actual->siguiente;
+    nuevo->anterior = actual;
+
+    if (actual->siguiente)
+        actual->siguiente->anterior = nuevo;
+
+    actual->siguiente = nuevo;
+}
+
+void eliminarEmpleado(int numero) {
+    if (cabeza == NULL) {
+        printf("Lista vacia.\n");
+        return;
+    }
+
+    Empleado* actual = cabeza;
+    while (actual && actual->numEmpleado != numero)
+        actual = actual->siguiente;
+
+    if (!actual) {
+        printf("Empleado no encontrado.\n");
+        return;
+    }
+
+    if (actual->anterior)
+        actual->anterior->siguiente = actual->siguiente;
+    else
+        cabeza = actual->siguiente;
+
+    if (actual->siguiente)
+        actual->siguiente->anterior = actual->anterior;
+
+    free(actual);
+    printf("Empleado eliminado correctamente.\n");
+}
+
+void mostrarEmpleados() {
+    if (!cabeza) {
+        printf("Lista vacia.\n");
+        return;
+    }
+
+    Empleado* actual = cabeza;
+    printf("\n--- Lista de Empleados ---\n");
+    while (actual) {
+        printf("\nNumero: %d\nNombre: %s\nDepartamento: %s\n", actual->numEmpleado, actual->nombre, actual->departamento);
+        printf("Domicilio: %s %s, %s, CP %s, %s\n", actual->domicilio.calle, actual->domicilio.numero,
+               actual->domicilio.colonia, actual->domicilio.codigoPostal, actual->domicilio.ciudad);
+        printf("Telefono: %s\nSalario: %.2f\n", actual->telefono, actual->salario);
+        actual = actual->siguiente;
+    }
+}
+
+void mostrarPorDepartamento() {
+    if (!cabeza) {
+        printf("Lista vacia.\n");
+        return;
+    }
+
+    char depto[50];
+    printf("Ingrese el nombre del departamento: ");
+    fgets(depto, 50, stdin);
+    depto[strcspn(depto, "\n")] = '\0';
+
+    Empleado* actual = cabeza;
+    int encontrados = 0;
+    printf("\nEmpleados del departamento %s:\n", depto);
+    while (actual) {
+        if (strcmp(actual->departamento, depto) == 0) {
+            printf("Numero: %d | Nombre: %s | Salario: %.2f\n", actual->numEmpleado, actual->nombre, actual->salario);
+            encontrados = 1;
+        }
+        actual = actual->siguiente;
+    }
+
+    if (!encontrados)
+        printf("No se encontraron empleados en ese departamento.\n");
+}
+
+void modificarEmpleado() {
+    if (!cabeza) {
+        printf("Lista vacia.\n");
+        return;
+    }
+
+    int num;
+    printf("Ingrese numero de empleado a modificar: ");
+    scanf("%d", &num);
+    getchar();
+
+    Empleado* actual = cabeza;
+    while (actual && actual->numEmpleado != num)
+        actual = actual->siguiente;
+
+    if (!actual) {
+        printf("Empleado no encontrado.\n");
+        return;
+    }
+
+    int opcion;
+    printf("\n1. Nombre y apellido\n2. Departamento\n3. Domicilio\n4. Telefono\n5. Salario\nSeleccione campo: ");
+    scanf("%d", &opcion);
+    getchar();
+
+    switch (opcion) {
+        case 1:
+            printf("Nuevo nombre: ");
+            fgets(actual->nombre, 50, stdin);
+            actual->nombre[strcspn(actual->nombre, "\n")] = '\0';
+            break;
+        case 2:
+            printf("Nuevo departamento: ");
+            fgets(actual->departamento, 50, stdin);
+            actual->departamento[strcspn(actual->departamento, "\n")] = '\0';
+            break;
+        case 3:
+            printf("Nueva calle: ");
+            fgets(actual->domicilio.calle, 50, stdin);
+            actual->domicilio.calle[strcspn(actual->domicilio.calle, "\n")] = '\0';
+            break;
+        case 4:
+            printf("Nuevo telefono: ");
+            fgets(actual->telefono, 20, stdin);
+            actual->telefono[strcspn(actual->telefono, "\n")] = '\0';
+            break;
+        case 5:
+            printf("Nuevo salario: ");
+            scanf("%f", &actual->salario);
+            break;
+        default:
+            printf("Opcion invalida.\n");
+    }
+
+    printf("Registro actualizado.\n");
+}
+
+// =============== FUNCIONES PILA (QUEJAS) ==============
+
+Queja* crearQueja() {
+    Queja* nueva = (Queja*) malloc(sizeof(Queja));
+    if (!nueva) {
+        printf("Error de memoria.\n");
+        exit(1);
+    }
+
+    printf("\n--- Nueva Queja ---\n");
+    printf("Folio: ");
+    scanf("%d", &nueva->folio);
+    getchar();
+
+    printf("Nombre de quien realiza la queja: ");
+    fgets(nueva->nombrePersona, 50, stdin);
+    nueva->nombrePersona[strcspn(nueva->nombrePersona, "\n")] = '\0';
+
+    printf("Departamento del que se queja: ");
+    fgets(nueva->departamentoQueja, 50, stdin);
+    nueva->departamentoQueja[strcspn(nueva->departamentoQueja, "\n")] = '\0';
+
+    printf("Descripcion de la queja: ");
+    fgets(nueva->descripcion, 200, stdin);
+    nueva->descripcion[strcspn(nueva->descripcion, "\n")] = '\0';
+
+    printf("Fecha: ");
+    fgets(nueva->fecha, 20, stdin);
+    nueva->fecha[strcspn(nueva->fecha, "\n")] = '\0';
+
+    nueva->siguiente = NULL;
+    return nueva;
+}
+
+void agregarQueja() {
+    Queja* nueva = crearQueja();
+    nueva->siguiente = cima;
+    cima = nueva;
+    printf("Queja agregada correctamente.\n");
+}
+
+void asignarQueja() {
+    if (!cima) {
+        printf("No hay quejas por asignar.\n");
+        return;
+    }
+
+    Queja* temp = cima;
+    printf("\n--- Queja Asignada ---\n");
+    printf("Folio: %d\nNombre: %s\nDepartamento: %s\nDescripcion: %s\nFecha: %s\n",
+           temp->folio, temp->nombrePersona, temp->departamentoQueja, temp->descripcion, temp->fecha);
+    cima = cima->siguiente;
+    free(temp);
+    printf("Queja eliminada de la pila.\n");
+}
+
+void revisarQuejas() {
+    if (!cima) {
+        printf("No hay quejas.\n");
+        return;
+    }
+
+    Queja* actual = cima;
+    printf("\n--- Quejas en la caja ---\n");
+    while (actual) {
+        printf("Folio: %d | Nombre: %s | Departamento: %s | Fecha: %s\n",
+               actual->folio, actual->nombrePersona, actual->departamentoQueja, actual->fecha);
+        actual = actual->siguiente;
+    }
+}
+
+void quejaSiguiente() {
+    if (!cima) {
+        printf("No hay quejas pendientes.\n");
+        return;
+    }
+    printf("\n--- Queja en la cima ---\n");
+    printf("Folio: %d\nNombre: %s\nDepartamento: %s\nDescripcion: %s\nFecha: %s\n",
+           cima->folio, cima->nombrePersona, cima->departamentoQueja, cima->descripcion, cima->fecha);
+}
+
+// =============== MENUS PRINCIPALES ====================
+
+void menuEmpleados() {
+    int opcion, numero;
+    Empleado* nuevo;
+
+    do {
+        printf("\n=== MENU EMPLEADOS ===\n");
+        printf("1. Altas (inserciones)\n");
+        printf("2. Bajas (eliminaciones)\n");
+        printf("3. Mostrar por departamento\n");
+        printf("4. Modificar registro\n");
+        printf("5. Mostrar todos\n");
+        printf("6. Volver al menu principal\n");
+        printf("Seleccione una opcion: ");
+        scanf("%d", &opcion);
+        getchar();
+
+        switch (opcion) {
+            case 1:
+                nuevo = crearEmpleado();
+                insertarOrdenado(nuevo);
+                break;
+            case 2:
+                printf("Numero de empleado a eliminar: ");
+                scanf("%d", &numero);
+                eliminarEmpleado(numero);
+                break;
+            case 3:
+                mostrarPorDepartamento();
+                break;
+            case 4:
+                modificarEmpleado();
+                break;
+            case 5:
+                mostrarEmpleados();
+                break;
+            case 6:
+                break;
+            default:
+                printf("Opcion no valida.\n");
+        }
+    } while (opcion != 6);
+}
+
+void menuQuejas() {
+    int opcion;
+    do {
+        printf("\n=== MENU CAJA DE QUEJAS ===\n");
+        printf("1. Agregar una queja\n");
+        printf("2. Asignar una queja\n");
+        printf("3. Revisar las quejas\n");
+        printf("4. Queja siguiente\n");
+        printf("5. Volver al menu principal\n");
+        printf("Seleccione una opcion: ");
+        scanf("%d", &opcion);
+        getchar();
+
+        switch (opcion) {
+            case 1: agregarQueja(); break;
+            case 2: asignarQueja(); break;
+            case 3: revisarQuejas(); break;
+            case 4: quejaSiguiente(); break;
+            case 5: break;
+            default: printf("Opcion no valida.\n");
+        }
+    } while (opcion != 5);
+}
+
+void menuPrincipal() {
+    int opcion;
+    do {
+        printf("\n=== SISTEMA GENERAL ===\n");
+        printf("1. Gestion de empleados (Lista doblemente enlazada)\n");
+        printf("2. Caja de quejas (Pila)\n");
+        printf("3. Salir\n");
+        printf("Seleccione una opcion: ");
+        scanf("%d", &opcion);
+        getchar();
+
+        switch (opcion) {
+            case 1: menuEmpleados(); break;
+            case 2: menuQuejas(); break;
+            case 3: printf("Saliendo del sistema...\n"); break;
+            default: printf("Opcion no valida.\n");
+        }
+    } while (opcion != 3);
+}
+
+// =============== FUNCION PRINCIPAL ====================
+
+int main() {
+    menuPrincipal();
+    return 0;
+}
